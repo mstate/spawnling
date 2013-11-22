@@ -128,7 +128,13 @@ class Spawnling
       end
     end
     # clean up connections from expired threads
-    ActiveRecord::Base.verify_active_connections!() if defined?(ActiveRecord)
+    if defined?(ActiveRecord)
+      if defined?(ActiveRecord::Base.verify_active_connections!)
+        ActiveRecord::Base.verify_active_connections!()
+      else # rails 4
+         ActiveRecord::Base.clear_active_connections!
+      end
+    end
   end
 
   protected
@@ -200,7 +206,13 @@ class Spawnling
 
   def thread_it(options)
     # clean up stale connections from previous threads
-    ActiveRecord::Base.verify_active_connections!() if defined?(ActiveRecord)
+    if defined?(ActiveRecord)
+      if defined?(ActiveRecord::Base.verify_active_connections!)
+        ActiveRecord::Base.verify_active_connections!()
+      else # rails 4
+         ActiveRecord::Base.clear_active_connections!
+      end
+    end
     thr = Thread.new do
       # run the long-running code block
       ActiveRecord::Base.connection_pool.with_connection { yield  } if defined?(ActiveRecord)
